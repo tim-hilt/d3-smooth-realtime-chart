@@ -37,7 +37,6 @@ const main = () => {
 	const oneMinuteAgo = new Date(now.getTime() - 60000);
 
 	const xScale = d3.scaleUtc().domain([oneMinuteAgo, now]).range([0, width]);
-
 	const yScale = d3.scaleLinear().range([height, 0]);
 
 	const line = d3
@@ -46,22 +45,48 @@ const main = () => {
 		.y((d) => yScale(d.y));
 
 	const xAxis = svg.append("g").attr("transform", `translate(0,${height})`);
-
 	const yAxis = svg.append("g");
 
-	const linePath = svg
+	svg
 		.append("path")
-		.datum(data)
 		.attr("clip-path", "url(#clip)")
+		.datum(data)
 		.attr("fill", "none")
-		.attr("stroke", "black");
-
-	linePath
+		.attr("stroke", "black")
 		.transition()
 		.duration(1000)
 		.ease(d3.easeLinear)
 		.on("start", updateChart);
+
 	const oneSecondInPixels = width / (60 * 1000);
+	const formatMillisecond = d3.utcFormat(".%L"),
+		formatSecond = d3.utcFormat(":%S"),
+		formatMinute = d3.utcFormat("%H:%M"),
+		formatHour = d3.utcFormat("%I %p"),
+		formatDay = d3.utcFormat("%a %d"),
+		formatWeek = d3.utcFormat("%b %d"),
+		formatMonth = d3.utcFormat("%B"),
+		formatYear = d3.utcFormat("%Y");
+
+	function multiFormat(date: Date) {
+		return (
+			d3.utcSecond(date) < date
+				? formatMillisecond
+				: d3.utcMinute(date) < date
+					? formatSecond
+					: d3.utcHour(date) < date
+						? formatMinute
+						: d3.utcDay(date) < date
+							? formatHour
+							: d3.utcMonth(date) < date
+								? d3.utcWeek(date) < date
+									? formatDay
+									: formatWeek
+								: d3.utcYear(date) < date
+									? formatMonth
+									: formatYear
+		)(date);
+	}
 
 	function updateChart() {
 		const now = new Date();
@@ -78,7 +103,8 @@ const main = () => {
 			.transition()
 			.duration(1000)
 			.ease(d3.easeLinear)
-			.call(d3.axisBottom(xScale));
+			// @ts-ignore
+			.call(d3.axisBottom(xScale).tickFormat(multiFormat));
 
 		yScale.domain(d3.extent(data.map((d) => d.y)) as [number, number]);
 		yAxis
@@ -87,8 +113,10 @@ const main = () => {
 			.ease(d3.easeLinear)
 			.call(d3.axisLeft(yScale));
 
-		linePath.attr("d", line).attr("transform", null);
-		d3.active(linePath.node())
+		// @ts-ignore
+		d3.select(this).attr("d", line).attr("transform", null);
+		// @ts-ignore
+		d3.active(this)
 			.attr("transform", `translate(${oneSecondInPixels},0)`)
 			.transition()
 			.on("start", updateChart);
