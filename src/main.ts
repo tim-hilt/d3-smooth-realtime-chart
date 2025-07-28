@@ -1,5 +1,13 @@
 import * as d3 from "d3";
 
+/**
+ * TODO: Fix choppy data addition
+ * TODO: What about non-deterministic data-addition?
+ * TODO: Don't animate in axis on first render - it should just be there
+ * TODO: Don't render gray bar on right side on first render
+ * TODO: Data being deleted too soon? Only happens sometimes
+ */
+
 type Data = {
 	timestamp: Date;
 	y: number;
