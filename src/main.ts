@@ -24,6 +24,13 @@ const main = () => {
 		.attr("height", height + margin.top + margin.bottom)
 		.append("g")
 		.attr("transform", `translate(${margin.left},${margin.top})`);
+	svg
+		.append("defs")
+		.append("clipPath")
+		.attr("id", "clip")
+		.append("rect")
+		.attr("width", width)
+		.attr("height", height);
 
 	const now = new Date();
 	const oneMinuteAgo = new Date(now.getTime() - 60000);
@@ -43,6 +50,7 @@ const main = () => {
 
 	const linePath = svg
 		.append("path")
+		.attr("clip-path", "url(#clip)")
 		.attr("fill", "none")
 		.attr("stroke", "black")
 		.attr("stroke-width", 1);
