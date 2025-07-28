@@ -88,8 +88,7 @@ const main = () => {
 			.call(d3.axisLeft(yScale));
 
 		linePath.attr("d", line).attr("transform", null);
-		linePath
-			.transition()
+		d3.active(linePath.node())
 			.attr("transform", `translate(${oneSecondInPixels},0)`)
 			.transition()
 			.on("start", updateChart);
