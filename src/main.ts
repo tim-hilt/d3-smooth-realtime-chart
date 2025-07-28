@@ -24,6 +24,7 @@ const main = () => {
 		.attr("height", height + margin.top + margin.bottom)
 		.append("g")
 		.attr("transform", `translate(${margin.left},${margin.top})`);
+
 	svg
 		.append("defs")
 		.append("clipPath")
@@ -50,12 +51,19 @@ const main = () => {
 
 	const linePath = svg
 		.append("path")
+		.datum(data)
 		.attr("clip-path", "url(#clip)")
 		.attr("fill", "none")
-		.attr("stroke", "black")
-		.attr("stroke-width", 1);
+		.attr("stroke", "black");
 
-	const updateChart = () => {
+	linePath
+		.transition()
+		.duration(1000)
+		.ease(d3.easeLinear)
+		.on("start", updateChart);
+	const oneSecondInPixels = width / (60 * 1000);
+
+	function updateChart() {
 		const now = new Date();
 		const oneMinuteAgo = new Date(now.getTime() - 60000);
 
@@ -65,26 +73,33 @@ const main = () => {
 			y: value,
 		});
 
-		// Update scales
 		xScale.domain([oneMinuteAgo, now]);
+		xAxis
+			.transition()
+			.duration(1000)
+			.ease(d3.easeLinear)
+			.call(d3.axisBottom(xScale));
+
 		yScale.domain(d3.extent(data.map((d) => d.y)) as [number, number]);
+		yAxis
+			.transition()
+			.duration(200)
+			.ease(d3.easeLinear)
+			.call(d3.axisLeft(yScale));
 
-		// Update axes
-		xAxis.call(d3.axisBottom(xScale));
-		yAxis.call(d3.axisLeft(yScale));
-
-		// Update line
-		linePath.datum(data).attr("d", line);
+		linePath.attr("d", line).attr("transform", null);
+		linePath
+			.transition()
+			.attr("transform", `translate(${oneSecondInPixels},0)`)
+			.transition()
+			.on("start", updateChart);
 
 		// Remove data older than 1 minute
 		const cutoff = oneMinuteAgo.getTime();
 		if (data[0].timestamp.getTime() < cutoff) {
 			data.shift();
 		}
-	};
-
-	// Update every second
-	setInterval(updateChart, 1000);
+	}
 };
 
 main();
