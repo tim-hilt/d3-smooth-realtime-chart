@@ -6,7 +6,6 @@ type Data = {
 };
 
 /**
- * TODO: Don't start with one second delay
  * TODO: What about non-deterministic data-addition?
  */
 
@@ -27,6 +26,8 @@ var svg = d3
 		.attr("transform", `translate(${margin.left},${margin.top})`);
 
 const now = new Date();
+data.push({ timestamp: new Date(now.getTime() - 1000), y: 0 });
+
 const oneMinuteAgo = new Date(now.getTime() - 60000);
 var x = d3
 	.scaleUtc()
@@ -49,11 +50,10 @@ g.append("defs")
 
 const xAxis = g
 	.append("g")
-	.attr("class", "axis axis--x")
 	.attr("transform", `translate(0,${y(0)})`)
 	.call(d3.axisBottom(x));
 
-g.append("g").attr("class", "axis axis--y").call(d3.axisLeft(y));
+g.append("g").call(d3.axisLeft(y));
 
 const formatMillisecond = d3.utcFormat(".%L"),
 	formatSecond = d3.utcFormat(":%S"),
@@ -112,6 +112,8 @@ function tick() {
 	// Redraw the line.
 	// @ts-ignore
 	d3.select(this).attr("d", line).attr("transform", null);
+
+	console.log(x(new Date(oneMinuteAgo.getTime() - 1000)));
 
 	// Slide it to the left.
 	// @ts-ignore
